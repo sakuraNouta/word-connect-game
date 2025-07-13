@@ -1,0 +1,5 @@
+import WordConnectGame from "../word-connect-game"
+
+export default function Page() {
+  return <WordConnectGame />
+}
