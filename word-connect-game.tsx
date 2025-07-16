@@ -64,10 +64,15 @@ const defaultWordGroups: WordGroup[] = [
 ];
 
 const defaultWordPairs: WordPair[] = [
-
   // Unit 5
   { id: 1, chinese: '邀请', english: 'invite', matched: false, groupId: 1 },
-  { id: 2, chinese: '失望的', english: 'disappointed', matched: false, groupId: 1 },
+  {
+    id: 2,
+    chinese: '失望的',
+    english: 'disappointed',
+    matched: false,
+    groupId: 1,
+  },
   { id: 3, chinese: '电影', english: 'film', matched: false, groupId: 1 },
   { id: 4, chinese: '闻到', english: 'smell', matched: false, groupId: 1 },
   { id: 5, chinese: '似乎', english: 'seem', matched: false, groupId: 1 },
@@ -79,21 +84,39 @@ const defaultWordPairs: WordPair[] = [
   { id: 9, chinese: '考试', english: 'exam', matched: false, groupId: 2 },
   { id: 10, chinese: '严格的', english: 'strict', matched: false, groupId: 2 },
   { id: 11, chinese: '害羞的', english: 'shy', matched: false, groupId: 2 },
-  { id: 12, chinese: '别紧张', english: 'take it easy', matched: false, groupId: 2 },
+  {
+    id: 12,
+    chinese: '别紧张',
+    english: 'take it easy',
+    matched: false,
+    groupId: 2,
+  },
   { id: 13, chinese: '不及格', english: 'fail', matched: false, groupId: 2 },
   { id: 14, chinese: '某人', english: 'someone', matched: false, groupId: 2 },
   { id: 15, chinese: '感觉', english: 'feeling', matched: false, groupId: 2 },
   { id: 16, chinese: '笑话', english: 'joke', matched: false, groupId: 2 },
 
   // Unit 7
-  { id: 17, chinese: '顺便提一下', english: 'by the way', matched: false, groupId: 3 },
+  {
+    id: 17,
+    chinese: '顺便提一下',
+    english: 'by the way',
+    matched: false,
+    groupId: 3,
+  },
   { id: 18, chinese: '是的', english: 'yeah', matched: false, groupId: 3 },
   { id: 19, chinese: '通常的', english: 'usual', matched: false, groupId: 3 },
   { id: 20, chinese: '也', english: 'either', matched: false, groupId: 3 },
   { id: 21, chinese: '接受', english: 'accept', matched: false, groupId: 3 },
   { id: 22, chinese: '可爱的', english: 'lovely', matched: false, groupId: 3 },
   { id: 23, chinese: '有用的', english: 'helpful', matched: false, groupId: 3 },
-  { id: 24, chinese: '国际的', english: 'international', matched: false, groupId: 3 },
+  {
+    id: 24,
+    chinese: '国际的',
+    english: 'international',
+    matched: false,
+    groupId: 3,
+  },
 ];
 
 export default function Component() {
@@ -1266,6 +1289,10 @@ export default function Component() {
                           : 'bg-purple-50 border-purple-200 hover:bg-purple-100 hover:shadow-md'
                       }`}
                       onClick={() => handleCardClick(player.id, word.id)}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        handleCardClick(player.id, word.id);
+                      }}
                     >
                       <CardContent className="p-2 text-center relative">
                         <div
