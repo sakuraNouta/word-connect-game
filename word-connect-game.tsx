@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -127,12 +128,11 @@ export default function Component() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [editingWords, setEditingWords] = useState<WordPair[]>([]);
   const [editingGroups, setEditingGroups] = useState<WordGroup[]>([]);
-  const [newChinese, setNewChinese] = useState('');
-  const [newEnglish, setNewEnglish] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState<number>(0); // 设置界面中选择的分组ID
   const [gameGroupId, setGameGroupId] = useState<number>(1); // 游戏中选择的分组ID // 0表示全部分组
   const [pairsPerPlayer, setPairsPerPlayer] = useState(6); // 每个玩家的配对单词数量
+  const [batchInput, setBatchInput] = useState(''); // 批量输入的文本
 
   const [players, setPlayers] = useState<Player[]>([
     {
@@ -251,20 +251,61 @@ export default function Component() {
     setIsSettingsOpen(true);
   };
 
-  // 添加新单词对
-  const addWordPair = () => {
-    if (newChinese.trim() && newEnglish.trim() && selectedGroupId > 0) {
-      const newId = Math.max(...editingWords.map((w) => w.id), 0) + 1;
-      const newPair: WordPair = {
-        id: newId,
-        chinese: newChinese.trim(),
-        english: newEnglish.trim(),
-        matched: false,
-        groupId: selectedGroupId,
-      };
-      setEditingWords([...editingWords, newPair]);
-      setNewChinese('');
-      setNewEnglish('');
+  // 批量添加单词对
+  const addBatchWordPairs = () => {
+    if (!batchInput.trim() || selectedGroupId === 0) {
+      toast.error('请选择分组并输入单词对');
+      return;
+    }
+
+    const lines = batchInput
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim());
+    const newPairs: WordPair[] = [];
+    let currentMaxId = Math.max(...editingWords.map((w) => w.id), 0);
+    let successCount = 0;
+    let errorCount = 0;
+
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return;
+
+      // 按空格分割，取第一个作为英文，剩余的作为中文
+      const parts = trimmedLine.split(' ');
+      if (parts.length < 2) {
+        errorCount++;
+        return;
+      }
+
+      const english = parts[0].trim();
+      const chinese = parts.slice(1).join(' ').trim();
+
+      if (english && chinese) {
+        currentMaxId++;
+        newPairs.push({
+          id: currentMaxId,
+          english,
+          chinese,
+          matched: false,
+          groupId: selectedGroupId,
+        });
+        successCount++;
+      } else {
+        errorCount++;
+      }
+    });
+
+    if (newPairs.length > 0) {
+      setEditingWords([...editingWords, ...newPairs]);
+      setBatchInput('');
+      toast.success(
+        `成功添加 ${successCount} 对单词${
+          errorCount > 0 ? `，${errorCount} 行格式错误已跳过` : ''
+        }`
+      );
+    } else {
+      toast.error('没有有效的单词对，请检查格式');
     }
   };
 
@@ -815,7 +856,10 @@ export default function Component() {
                     游戏设置
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogContent
+                  className="max-w-4xl max-h-[80vh] overflow-y-auto"
+                  onPointerDownOutside={(e) => e.preventDefault()}
+                >
                   <DialogHeader>
                     <DialogTitle>游戏设置</DialogTitle>
                   </DialogHeader>
@@ -938,41 +982,31 @@ export default function Component() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="space-y-3">
                         <div>
-                          <Label htmlFor="newChinese">中文</Label>
-                          <Input
-                            id="newChinese"
-                            value={newChinese}
-                            onChange={(e) => setNewChinese(e.target.value)}
-                            placeholder="输入中文单词"
+                          <Label htmlFor="batchInput">批量添加单词对</Label>
+                          <Textarea
+                            id="batchInput"
+                            value={batchInput}
+                            onChange={(e) => setBatchInput(e.target.value)}
+                            placeholder={`每行一个单词对，格式：英文 中文，例如：
+hello 你好
+world 世界
+invite 邀请`}
                             disabled={selectedGroupId === 0}
-                            onKeyPress={(e) =>
-                              e.key === 'Enter' && addWordPair()
-                            }
+                            rows={8}
+                            className="resize-none"
                           />
                         </div>
-                        <div>
-                          <Label htmlFor="newEnglish">英文</Label>
-                          <Input
-                            id="newEnglish"
-                            value={newEnglish}
-                            onChange={(e) => setNewEnglish(e.target.value)}
-                            placeholder="输入英文单词"
-                            disabled={selectedGroupId === 0}
-                            onKeyPress={(e) =>
-                              e.key === 'Enter' && addWordPair()
-                            }
-                          />
-                        </div>
-                        <div className="flex items-end">
+                        <div className="flex justify-end">
                           <Button
-                            onClick={addWordPair}
-                            className="w-full"
-                            disabled={selectedGroupId === 0}
+                            onClick={addBatchWordPairs}
+                            disabled={
+                              selectedGroupId === 0 || !batchInput.trim()
+                            }
                           >
                             <Plus className="w-4 h-4 mr-2" />
-                            添加
+                            批量添加
                           </Button>
                         </div>
                       </div>
